@@ -8,6 +8,7 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
 
 
 /*
+
 1. what is { type FastifyPluginAsync }
 tells the IDE that 'app' is a Fastify instance
 
