@@ -13,7 +13,7 @@ app.listen({ port, host }).catch(err => {
 
 
 /*
-?? is a nullish coalescing operator. If the left side is null or undefined, it returns the right side.
+'??' is a nullish coalescing operator. If the left side is null or undefined, it returns the right side.
 
 0.0.0.0
 A special address that tells the server to listen on all available network interfaces
