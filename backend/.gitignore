@@ -28,3 +28,4 @@ coverage/
 
 # Personal study note
 note.txt
+/src/generated/prisma
