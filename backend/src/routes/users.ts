@@ -1,7 +1,7 @@
 import { type FastifyPluginAsync } from "fastify";
 import { prisma } from "../lib/prisma.js";
 
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { handlePrismaError } from "../lib/error.js";
 
 interface CreateUserBody {
     email: string;
@@ -40,13 +40,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
                 });
                 return reply.status(201).send(user);
             } catch (err) {
-                if (err instanceof PrismaClientKnownRequestError) {
-                    if (err.code === "P2002") {
-                        // Unique constraint failed
-                        return reply.status(409).send({ message: "User already exists" });
-                    }
-                }
-                throw err;
+                handlePrismaError(err, reply);
             }
         }
     );
