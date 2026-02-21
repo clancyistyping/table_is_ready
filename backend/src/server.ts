@@ -11,7 +11,6 @@ app.listen({ port, host }).catch((err) => {
     process.exit(1);
 })
 
-
 /*
 '??' is a nullish coalescing operator. If the left side is null or undefined, it returns the right side.
 

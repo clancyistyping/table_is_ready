@@ -1,9 +1,11 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { healthRoutes } from "./routes/health.js";
+import { userRoutes } from "./routes/users.js";
 
 export function buildApp(): FastifyInstance {
     const app = Fastify({ logger: true });
     app.register(healthRoutes);
+    app.register(userRoutes);
     return app;
 }
 
@@ -14,4 +16,6 @@ health.js?
 We're wrapping the Fastify instance in a function so that we can test it in isolation.
 
 app.register(healthRoutes) is the same as app.use(healthRoutes) but creates a new scope, kind of like an import
+
+
 */
