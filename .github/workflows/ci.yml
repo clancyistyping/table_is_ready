@@ -47,6 +47,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Run migrations
+        run: npx prisma migrate deploy
+
       # Builds the Docker image using backend/ as the build context
       - name: Docker build
         run: docker build -t backend-api:ci .
