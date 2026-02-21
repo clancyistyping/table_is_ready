@@ -44,4 +44,34 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
             }
         }
     );
+
+    app.get(
+        "/users",
+        {
+            schema: {
+                response: {
+                    200: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                                id: { type: "string" },
+                                email: { type: "string" },
+                                createdAt: { type: "string" },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        async (_, reply) => {
+            // Paginate and filter users
+            // Potentially preventing large DB response.
+            const users = await prisma.user.findMany({
+                take: 50,          // limit
+                orderBy: { createdAt: 'desc' }
+            });
+            return reply.status(200).send(users);
+        }
+    );
 };
