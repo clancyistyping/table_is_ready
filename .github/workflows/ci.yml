@@ -20,6 +20,23 @@ jobs:
     name: Backend CI
     runs-on: ubuntu-latest
 
+    # 1. Add a PostgreSQL service for the tests to talk to
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        # Ensure the DB is ready before the job starts
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: backend
@@ -35,20 +52,40 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install
+            # Caching node modules
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          # This creates a "fingerprint" of your package-lock.json
+          key: ${{ runner.os }}-build-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Generate Prisma
+        run: npx prisma generate
+
+      # 2. Point to the service container's URL
+      - name: Run migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
+
+      - name: Run tests
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
 
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Test
-        run: npm test
-
       - name: Build
         run: npm run build
-
-      - name: Run migrations
-        run: npx prisma migrate deploy
 
       # Builds the Docker image using backend/ as the build context
       - name: Docker build
