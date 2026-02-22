@@ -27,5 +27,5 @@ Thumbs.db
 coverage/
 
 # Personal study note
-note.txt
+note.md
 /src/generated/prisma

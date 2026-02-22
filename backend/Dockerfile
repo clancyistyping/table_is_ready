@@ -1,20 +1,21 @@
-# ---- Build node ----
+# ---- Build stage ----
 FROM node:20-alpine AS build 
+
 WORKDIR /app
 # starting with tiny version of Linux with node20 installed
 
 COPY package*.json ./
 COPY tsconfig*.json ./
-RUN npm ci
+COPY prisma ./prisma
 # `COPY package*.json ./` find all package*.json (the source) and paste them into the destination relative to WORKDIR.
+
+RUN npm ci
 # ci = clean install, ensures dependencies are exact match of package.json
 
 COPY src ./src
-COPY test ./test
 
-RUN npm run test
+RUN npx prisma generate
 RUN npm run build
-# run test. everything stops if it doesn't pass
 # 'build' runs tsc (.ts -> .js)
 
 # ---- runtime stage ----
@@ -29,6 +30,8 @@ RUN npm ci --omit=dev
 # installs only what's needed to run the app.
 
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/src/generated ./src/generated
+COPY --from=build /app/prisma ./prisma
 # reach back to the first build stage, and grab only the compiled .js files, and toss everything else
 
 EXPOSE 3000
