@@ -1,16 +1,21 @@
-import "fastify";
+import "@fastify/jwt";
+import { JwtPayload } from "./auth.js";
 
+// 1. Augment the JWT module specifically
+declare module "@fastify/jwt" {
+  interface FastifyJWT {
+    payload: JwtPayload; // types for app.jwt.sign
+    user: JwtPayload;    // types for request.user
+  }
+}
+
+// 2. Augment the Fastify module for your custom decorator
 declare module "fastify" {
   interface FastifyInstance {
-    authenticate: (request: any, reply: any) => Promise<void>;
-  }
-
-  interface FastifyRequest {
-    user: {
-      userId: string;
-      iat: number;
-      exp: number;
-    };
+    authenticate: (
+      request: import("fastify").FastifyRequest,
+      reply: import("fastify").FastifyReply
+    ) => Promise<void>;
   }
 }
 
