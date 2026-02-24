@@ -9,10 +9,10 @@ COPY tsconfig*.json ./
 COPY prisma ./prisma
 # `COPY package*.json ./` find all package*.json (the source) and paste them into the destination relative to WORKDIR.
 
+COPY src ./src
 RUN npm ci
 # ci = clean install, ensures dependencies are exact match of package.json
 
-COPY src ./src
 
 RUN npx prisma generate
 RUN npm run build
@@ -30,10 +30,12 @@ RUN npm ci --omit=dev
 # installs only what's needed to run the app.
 
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/src/generated ./src/generated
+# Grab the prisma engine and generated client
 COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/src/generated ./src/generated
 # reach back to the first build stage, and grab only the compiled .js files, and toss everything else
 
 EXPOSE 3000
-CMD ["node", "dist/server.js"]
+
+CMD ["node", "dist/app.js"]
 # start the app

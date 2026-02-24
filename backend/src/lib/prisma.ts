@@ -1,17 +1,18 @@
 import "dotenv/config";
+import fs from 'fs';
 import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from "../generated/prisma/client.js"; // Note: Use client.js for the main entry
 
-// Use LOCAL_DATABASE_URL if we are on the host machine (like Vitest/Prisma Studio)
-// Otherwise fallback to the Docker DATABASE_URL
-const connectionString = process.env.LOCAL_DATABASE_URL || process.env.DATABASE_URL;
+// Check if the /.dockerenv file exists (standard for Docker)
+const isDocker = fs.existsSync('/.dockerenv');
 
-if (!connectionString) {
-  throw new Error("No database connection string found in .env");
-}
+// Decide which URL to use
+const connectionString = isDocker
+  ? process.env.DATABASE_URL       // Uses @postgres (Docker Network)
+  : process.env.LOCAL_DATABASE_URL; // Uses @localhost (Host Machine)
 
-// Log it ONCE to verify it says 'postgres' and NOT 'localhost'
+console.log(`running in ${isDocker ? 'DOCKER' : 'LOCAL'} mode`);
 console.log("Connecting to:", connectionString);
 
 // 1. Create the connection pool using your environment variable

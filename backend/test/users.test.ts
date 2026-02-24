@@ -2,7 +2,7 @@ import { describe, it, beforeAll, afterAll, expect } from "vitest";
 import request from "supertest";
 import { FastifyInstance } from "fastify";
 import { prisma } from "../src/lib/prisma.js";
-import { buildApp } from "../src/server.js";
+import { buildServer } from "../src/server.js";
 
 let app: FastifyInstance;
 
@@ -12,7 +12,7 @@ describe("Users API", () => {
         // load .env for vitest
         import('dotenv/config');
 
-        app = await buildApp();
+        app = await buildServer();
         await app.ready();
 
         try {
