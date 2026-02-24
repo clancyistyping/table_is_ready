@@ -1,22 +1,24 @@
-// Production entrypoint, starts the server
-import "dotenv/config";
-import { buildApp } from "./app.js";
+// Fastify instance + route registration
+import Fastify, { type FastifyInstance } from "fastify";
+import { healthRoutes } from "./routes/health.js";
+import { userRoutes } from "./routes/users.js";
 
-const app = buildApp();
+export function buildServer(): FastifyInstance {
+    const app = Fastify({ logger: true });
 
-const port = Number(process.env.PORT ?? 3000);
-const host = process.env.HOST ?? "0.0.0.0";
+    app.register(healthRoutes);
+    app.register(userRoutes);
 
-app.listen({ port, host }).catch((err) => {
-    app.log.error(err);
-    process.exit(1);
-})
+    return app;
+}
 
 /*
-'??' is a nullish coalescing operator. If the left side is null or undefined, it returns the right side.
+health.js?
+.js extension is used because tsc compiler transforms the file to JavaScript
 
-0.0.0.0
-A special address that tells the server to listen on all available network interfaces
-making it future-proof for Docker and cloud hosting providers
+We're wrapping the Fastify instance in a function so that we can test it in isolation.
+
+app.register(healthRoutes) is the same as app.use(healthRoutes) but creates a new scope, kind of like an import
+
 
 */

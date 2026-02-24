@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildApp } from "../src/app.js";
+import { buildApp } from "../src/server.js";
 
 describe("GET /health", () => {
     it("returns ok", async () => {

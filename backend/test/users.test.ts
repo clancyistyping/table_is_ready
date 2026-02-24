@@ -2,7 +2,7 @@ import { describe, it, beforeAll, afterAll, expect } from "vitest";
 import request from "supertest";
 import { FastifyInstance } from "fastify";
 import { prisma } from "../src/lib/prisma.js";
-import { buildApp } from "../src/app.js";
+import { buildApp } from "../src/server.js";
 
 let app: FastifyInstance;
 
