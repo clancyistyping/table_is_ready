@@ -1,13 +1,15 @@
 // Fastify instance + route registration
-import Fastify, { type FastifyInstance } from "fastify";
-import { healthRoutes } from "./routes/health.js";
-import { userRoutes } from "./routes/users.js";
+import Fastify from "fastify";
+import jwt from "@fastify/jwt";
+import sensible from "@fastify/sensible";
 
-export function buildServer(): FastifyInstance {
+export const buildServer = () => {
     const app = Fastify({ logger: true });
 
-    app.register(healthRoutes);
-    app.register(userRoutes);
+    app.register(sensible);
+    app.register(jwt, {
+        secret: process.env.JWT_SECRET!
+    })
 
     return app;
 }
