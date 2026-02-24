@@ -3,6 +3,8 @@ import Fastify from "fastify";
 import jwt from "@fastify/jwt";
 import sensible from "@fastify/sensible";
 
+import authPlugin from "./plugins/auth.plugin.js";
+
 export const buildServer = () => {
     const app = Fastify({ logger: true });
 
@@ -10,6 +12,8 @@ export const buildServer = () => {
     app.register(jwt, {
         secret: process.env.JWT_SECRET!
     })
+
+    app.register(authPlugin, { prefix: "/auth" })
 
     return app;
 }

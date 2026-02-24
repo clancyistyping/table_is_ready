@@ -1,6 +1,5 @@
 import { prisma } from "../lib/prisma.js";
 import { comparePassword, hashPassword } from "../utils/hash.js";
-import { signToken } from "../utils/jwt.js";
 
 export async function register(email: string, password: string) {
     const userExists = await prisma.user.findUnique({ where: { email } })
@@ -26,7 +25,6 @@ export async function login(email: string, password: string) {
     const isValid = await comparePassword(password, user.password)
     if (!isValid) throw new Error("Email and/or password is invalid")
 
-    const token = signToken({ userId: user.id })
-
-    return { token }
+    return user
+    // We don't need to issue JWT inside service since Fastify already has it. Intentionally leaving framework logic out services.
 }
