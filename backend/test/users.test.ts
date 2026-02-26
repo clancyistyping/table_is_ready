@@ -1,8 +1,8 @@
-import { describe, it, beforeAll, afterAll, expect } from "vitest";
+import { describe, it, beforeAll, afterAll, expect, beforeEach } from "vitest";
 import request from "supertest";
 import { FastifyInstance } from "fastify";
-import { prisma } from "../src/lib/prisma.js";
 import { buildServer } from "../src/server.js";
+import { prisma } from "../src/lib/prisma.js";
 
 let app: FastifyInstance;
 
@@ -14,17 +14,11 @@ describe("Users API", () => {
 
         app = await buildServer();
         await app.ready();
+    });
 
-        try {
-            // Reset database
-            await prisma.user.deleteMany();
-            console.log("✅ Database reset successful");
-        } catch (e: any) {
-            console.error("❌ Database reset failed!");
-            console.error("Error Code:", e.code); // Look for P2021 or P2002
-            console.error("Message:", e.message);
-            throw e;
-        }
+    beforeEach(async () => {
+        // This now wipes the isolated worker schema, not the public one
+        await prisma.user.deleteMany();
     });
 
     afterAll(async () => {
@@ -43,22 +37,34 @@ describe("Users API", () => {
 
 
     it("POST /users duplicate email should return 409", async () => {
+        const dupEmail = "duplicate@example.com";
+
+        await prisma.user.create({
+            data: { email: dupEmail, password: "hashed_password" }
+        });
+
         const res = await request(app.server)
             .post("/auth/register")
-            .send({ email: "test1@example.com", password: "password" })
+            .send({ email: dupEmail, password: "password" })
             .expect(409);
 
         expect(res.body.error).toBe("Email already in use");
     });
 
     it("GET /users should return all users", async () => {
+        // create new user
+        const uniqueEmail = `login-test-${Date.now()}@example.com`;
+        await prisma.user.create({
+            data: { email: uniqueEmail, password: "hashed_password" }
+        });
+
+        // get all users
         const res = await request(app.server)
             .get("/users")
             .expect(200);
 
-
         expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body.length).toBe(1);
-        expect(res.body[0].email).toBe("test1@example.com");
+        expect(res.body.length).toBe(1); // id and email
+        expect(res.body[0].email).toBe(uniqueEmail);
     });
 });
