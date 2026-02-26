@@ -20,6 +20,11 @@ jobs:
     name: Backend CI
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
+      CI: true
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
     # 1. Add a PostgreSQL service for the tests to talk to
     services:
       postgres:
@@ -75,16 +80,9 @@ jobs:
 
       - name: Run migrations
         run: npx prisma migrate deploy
-        env:
-          # We use localhost here because the runner is outside the service container
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
-          CI: true
 
       - name: Run tests
         run: npm run test
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       - name: Typecheck
         run: npm run typecheck
