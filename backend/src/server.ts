@@ -16,7 +16,6 @@ import { AppError } from "./utils/AppError.js";
 export const buildServer = async () => {
     const app = Fastify({
         logger: true,
-        ignoreTrailingSlash: true
     });
 
     const secret = process.env.JWT_SECRET;
