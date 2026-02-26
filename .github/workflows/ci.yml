@@ -28,6 +28,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: app_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+
         ports:
           - 5432:5432
         # Ensure the DB is ready before the job starts
@@ -83,7 +85,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          POSTGRES_HOST_AUTH_METHOD: trust
 
       - name: Typecheck
         run: npm run typecheck
