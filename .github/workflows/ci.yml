@@ -83,7 +83,7 @@ jobs:
 
       - name: Run tests
         # running tests one after another for now since tests are small
-        run: npm run test -- --fileParallelism=false --poolOptions.threads.singleThread
+        run: npm run test
 
       - name: Typecheck
         run: npm run typecheck
