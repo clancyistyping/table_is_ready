@@ -78,6 +78,7 @@ jobs:
         env:
           # We use localhost here because the runner is outside the service container
           DATABASE_URL: postgresql://postgres:password@localhost:5432/app_test
+          CI: true
 
       - name: Run tests
         run: npm run test
