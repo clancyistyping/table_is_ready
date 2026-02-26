@@ -3,12 +3,21 @@ import Fastify, { FastifyError } from "fastify";
 import jwt from "@fastify/jwt";
 import sensible from "@fastify/sensible";
 
-import authPlugin from "./plugins/auth.plugin.js";
-import usersPlugin from "./plugins/users.plugin.js";
-import healthPlugin from "./plugins/health.plugin.js";
+// Routes
+import authRoutes from "./routes/auth.routes.js";
+import usersRoutes from "./routes/users.routes.js";
+import healthRoutes from "./routes/health.routes.js";
 
-export const buildServer = () => {
-    const app = Fastify({ logger: true });
+// Plugins
+import authPlugin from "./plugins/auth.plugin.js";
+
+import { AppError } from "./utils/AppError.js";
+
+export const buildServer = async () => {
+    const app = Fastify({
+        logger: true,
+        ignoreTrailingSlash: true
+    });
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -16,36 +25,34 @@ export const buildServer = () => {
     }
 
     // Global error handler
-    app.setErrorHandler((error, request, reply) => {
-        // 1. Cast or check if it's a Fastify-compatible error
-        const err = error as FastifyError;
-
-        // 2. Check for statusCode (FastifyError always has this potential)
-        if (err.statusCode) {
-            return reply.status(err.statusCode).send({
-                message: err.message,
-                // Fallback to 'UNKNOWN' if code is missing
-                code: err.code || "UNKNOWN_ERROR",
+    app.setErrorHandler((error, _request, reply) => {
+        // If it's our custom error, use its status code
+        if (error instanceof AppError) {
+            return reply.code(error.statusCode).send({
+                error: error.message,
+                code: error.code // e.g., "AUTH_EMAIL_EXISTS"
             });
         }
 
-        // Handle unexpected errors (500s)
-        request.log.error(error);
-
-        return reply.status(500).send({
-            message: "Internal Server Error",
-            code: "INTERNAL_ERROR",
-        });
+        // Otherwise, send a generic 500
+        reply.code(500).send({ error: "Internal Server Error" });
     });
 
     // Register plugins
-    app.register(sensible);
-    app.register(jwt, {
+    await app.register(sensible);
+    await app.register(jwt, {
         secret: process.env.JWT_SECRET!
     })
-    app.register(healthPlugin);
-    app.register(authPlugin, { prefix: "/auth" })
-    app.register(usersPlugin, { prefix: "/users" })
+    await app.register(authPlugin)
+
+    await app.register(healthRoutes);
+    await app.register(authRoutes, { prefix: "/auth" })
+    await app.register(usersRoutes, { prefix: "/users" })
+
+
+    await app.ready();
+
+    // console.log(app.printRoutes());
 
     return app;
 }

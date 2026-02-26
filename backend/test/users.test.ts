@@ -33,8 +33,8 @@ describe("Users API", () => {
 
     it("POST /users should create a user", async () => {
         const res = await request(app.server)
-            .post("/users")
-            .send({ email: "test1@example.com" })
+            .post("/auth/register")
+            .send({ email: "test1@example.com", password: "password" })
             .expect(201);
 
         expect(res.body).toHaveProperty("id");
@@ -44,11 +44,11 @@ describe("Users API", () => {
 
     it("POST /users duplicate email should return 409", async () => {
         const res = await request(app.server)
-            .post("/users")
-            .send({ email: "test1@example.com" })
+            .post("/auth/register")
+            .send({ email: "test1@example.com", password: "password" })
             .expect(409);
 
-        expect(res.body.error).toBe("Email already exists");
+        expect(res.body.error).toBe("Email already in use");
     });
 
     it("GET /users should return all users", async () => {
@@ -56,6 +56,8 @@ describe("Users API", () => {
             .get("/users")
             .expect(200);
 
+
+        expect(Array.isArray(res.body)).toBe(true);
         expect(res.body.length).toBe(1);
         expect(res.body[0].email).toBe("test1@example.com");
     });

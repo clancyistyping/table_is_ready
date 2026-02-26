@@ -3,7 +3,7 @@ import { comparePassword, hashPassword } from "../utils/hash.js";
 
 import { AppError } from "../utils/AppError.js";
 
-
+// This module is a "brain/logic" for auth + user management 
 
 export async function register(email: string, password: string) {
     const userExists = await prisma.user.findUnique({ where: { email } })
