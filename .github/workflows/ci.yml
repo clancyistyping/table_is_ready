@@ -73,10 +73,13 @@ jobs:
       - name: Generate Prisma
         run: npx prisma generate
 
-      - name: Kill Ghost Env
-        run: rm -f .env .env.local .env.test
+      - name: Debug Database URL
+        run: |
+          node -e "console.log('Is URL a string?', typeof process.env.DATABASE_URL === 'string'); console.log('Length:', process.env.DATABASE_URL?.length)"
+        env:
+          DATABASE_URL: "postgresql://postgres:password@localhost:5432/app_test"
 
-      # 2. Point to the service container's URL
+        # 2. Point to the service container's URL
       - name: Run migrations
         run: npx prisma migrate deploy
         env:
