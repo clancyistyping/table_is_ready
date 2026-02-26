@@ -11,7 +11,7 @@ async function start() {
     console.log("🚀 Initializing Server...");
 
     try {
-        const app = buildServer();
+        const app = await buildServer();
 
         // This line is key: it waits for all plugins (including JWT) to load
         await app.ready();
