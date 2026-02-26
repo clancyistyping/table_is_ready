@@ -82,8 +82,8 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Run tests
-      # running tests one after another for now since tests are small
-        run: npm run test -- --fileParallelism=false --threads=false
+        # running tests one after another for now since tests are small
+        run: npm run test -- --fileParallelism=false --poolOptions.threads.singleThread
 
       - name: Typecheck
         run: npm run typecheck
