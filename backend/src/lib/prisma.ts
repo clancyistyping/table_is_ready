@@ -4,27 +4,24 @@ import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from "../generated/prisma/client.js"; // Note: Use client.js for the main entry
 
-// Check if the /.dockerenv file exists (standard for Docker)
+// Check if we are in CI or Docker. If not, we MUST use localhost.
+const isCI = process.env.CI === 'true';
 const isDocker = fs.existsSync('/.dockerenv');
 
-// Decide which URL to use
-const connectionString = isDocker
-  ? process.env.DATABASE_URL       // Uses @postgres (Docker Network)
-  : process.env.LOCAL_DATABASE_URL; // Uses @localhost (Host Machine)
+let connectionString: string;
 
-console.log(`running in ${isDocker ? 'DOCKER' : 'LOCAL'} mode`);
-console.log("Connecting to:", connectionString);
+if (isCI || isDocker) {
+  // Use the Docker internal hostname
+  connectionString = process.env.DATABASE_URL || "";
+} else {
+  // You are on your physical machine (D:/Coding projects/)
+  // Use localhost or 127.0.0.1
+  connectionString = process.env.LOCAL_DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/app";
+}
 
-// 1. Create the connection pool using your environment variable
+console.log("Environment:", isDocker ? "DOCKER" : isCI ? "CI" : "LOCAL");
+console.log("Target Host:", connectionString.split('@')[1]); // Logs only the "host:port/db" part
+
 const pool = new pg.Pool({ connectionString });
-
-// 2. Create the adapters
 const adapter = new PrismaPg(pool);
-
-// 3. Pass the adapter to the constructor (This fixes your error!)
 export const prisma = new PrismaClient({ adapter });
-
-// We made a separate file so that we get:
-// single DB connection
-// a place for logging and middleware plugging
-// cleaner route files
