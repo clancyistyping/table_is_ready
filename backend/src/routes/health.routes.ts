@@ -1,5 +1,4 @@
 import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
 
 const healthRoutes: FastifyPluginAsync = async (app) => {
   // Simple health check

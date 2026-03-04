@@ -15,6 +15,7 @@ import healthRoutes from "./routes/health.routes.js";
 import authPlugin from "./plugins/auth.plugin.js";
 
 import { AppError } from "./utils/AppError.js";
+import { request } from "node:http";
 
 export const buildServer = async () => {
     const app = Fastify({
@@ -27,7 +28,7 @@ export const buildServer = async () => {
     });
 
     // Global error handler
-    app.setErrorHandler((error, _request, reply) => {
+    app.setErrorHandler((error, _request, reply) => {      
         // If it's our custom error, use its status code
         if (error instanceof AppError) {
             return reply.code(error.statusCode).send({

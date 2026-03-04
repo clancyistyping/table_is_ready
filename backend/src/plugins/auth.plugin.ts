@@ -1,17 +1,16 @@
 import { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
-// import { JwtPayload } from "../types/auth.js";
-
-// This module is a "messenger/controller" that delivers messages to other modules
 
 const authPlugin: FastifyPluginAsync = async (app) => {
+    // Decorate so other routes can use it
     app.decorate("authenticate", async function (req, reply) {
         try {
             await req.jwtVerify();
         } catch (err) {
-            reply.unauthorized();
+            return reply.unauthorized();
         }
     });
 }
 
-export default fp(authPlugin)
+export default fp(authPlugin, { name: "auth-plugin" })
+// naming "auth-plugin" for debug purposes
