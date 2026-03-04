@@ -1,5 +1,5 @@
 services:
-# Database
+  # Database
   postgres:
     image: postgres:16
     container_name: app-postgres
@@ -8,15 +8,17 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: app
-    ports: 
+    ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # any tables created via db push are physically saved into local, `data` folder on my hard drive 
+      # any tables created via db push are physically saved into local, `data` folder on my hard drive
 
-# API
+  # API
   api:
-    build: .
+    build:
+      context: .
+      target: build # not worried about running in js yet
     ports:
       - "3000:3000"
     env_file:
@@ -25,6 +27,10 @@ services:
       - PORT=3000
       - HOST=0.0.0.0
       - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - .:/app # Sync local to the container when files are saved
+      - /app/node_modules # Protects container's node_modules from being overwritten
+    command: npx tsx watch src/server.ts # waching file changes
 
 volumes:
   postgres_data:

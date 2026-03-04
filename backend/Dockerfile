@@ -9,11 +9,14 @@ COPY tsconfig*.json ./
 COPY prisma ./prisma
 # `COPY package*.json ./` find all package*.json (the source) and paste them into the destination relative to WORKDIR.
 
-COPY src ./src
-RUN npm ci
 # ci = clean install, ensures dependencies are exact match of package.json
+RUN npm ci
 
+# Copy source code
+# src is copied here so that whenever only source code changes, it skips the above steps.
+COPY src ./src
 
+# Generate Prisma
 RUN npx prisma generate
 RUN npm run build
 # 'build' runs tsc (.ts -> .js)

@@ -1,3 +1,6 @@
+// config
+import { config } from "./config/index.js";
+
 // Fastify instance + route registration
 import Fastify, { FastifyError } from "fastify";
 import jwt from "@fastify/jwt";
@@ -18,10 +21,10 @@ export const buildServer = async () => {
         logger: true,
     });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-        throw new Error("FATAL: JWT_SECRET is missing from environment variables!");
-    }
+    // Checking JWT
+    await app.register(jwt, {
+        secret: config.jwtSecret,
+    });
 
     // Global error handler
     app.setErrorHandler((error, _request, reply) => {
@@ -39,15 +42,12 @@ export const buildServer = async () => {
 
     // Register plugins
     await app.register(sensible);
-    await app.register(jwt, {
-        secret: process.env.JWT_SECRET!
-    })
     await app.register(authPlugin)
 
+    // Register routes
     await app.register(healthRoutes);
     await app.register(authRoutes, { prefix: "/auth" })
     await app.register(usersRoutes, { prefix: "/users" })
-
 
     await app.ready();
 

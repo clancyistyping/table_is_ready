@@ -1,11 +1,13 @@
-import jwt from "jsonwebtoken"
+// Grandfathered; not in use
 
-const JWT_SECRET = process.env.JWT_SCRET!
+// import jwt from "jsonwebtoken"
 
-export function signToken(payload: object) {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' })
-}
+// const JWT_SECRET = process.env.JWT_SCRET!
 
-export function verifyToken(token: string) {
-    return jwt.verify(token, JWT_SECRET)
-}
+// export function signToken(payload: object) {
+//     return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' })
+// }
+
+// export function verifyToken(token: string) {
+//     return jwt.verify(token, JWT_SECRET)
+// }

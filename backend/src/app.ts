@@ -1,5 +1,4 @@
 // Production entrypoint, starts the server
-import "dotenv/config";
 import { buildServer } from "./server.js";
 
 const app = buildServer();
