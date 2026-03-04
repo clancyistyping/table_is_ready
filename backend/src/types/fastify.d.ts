@@ -16,6 +16,10 @@ declare module "fastify" {
       request: import("fastify").FastifyRequest,
       reply: import("fastify").FastifyReply
     ) => Promise<void>;
+    isAdmin: (
+      request: import("fastify").FastifyRequest,
+      reply: import("fastify").FastifyReply
+    ) => Promise<void>;
   }
 }
 

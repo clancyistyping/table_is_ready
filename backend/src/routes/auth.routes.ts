@@ -47,7 +47,9 @@ const authRoutes: FastifyPluginAsync = async (app) => {
 
             const user = await login(email, password)
 
-            const token = app.jwt.sign({ userId: user.id })
+            const token = app.jwt.sign({ userId: user.id,
+                role: user.role
+             })
 
             return reply.code(200).send({ token });
         })

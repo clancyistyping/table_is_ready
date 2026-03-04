@@ -12,10 +12,10 @@ const usersRoutes: FastifyPluginAsync = async (app) => {
 
     app.get(
         "/",
+        { preHandler: [app.authenticate] }, // only jwt authenticated users for now
         async (req) => {
-            const users = await getAllUsers();
-            return users; // Defaults to 200 OK
-        })
-};
+            return getAllUsers();
+        });
+}
 
 export default usersRoutes;

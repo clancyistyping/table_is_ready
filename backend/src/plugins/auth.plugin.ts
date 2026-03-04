@@ -10,6 +10,12 @@ const authPlugin: FastifyPluginAsync = async (app) => {
             return reply.unauthorized();
         }
     });
+
+    app.decorate("isAdmin", async function (req, reply) {
+        if (req.user.role !== "ADMIN") {
+            return reply.forbidden();
+        }
+    })
 }
 
 export default fp(authPlugin, { name: "auth-plugin" })
