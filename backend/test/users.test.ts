@@ -55,7 +55,7 @@ describe("Users API", () => {
 
     it("GET /users should return all users", async () => {
         // create new user
-        const uniqueEmail = `login-test-${Date.now()}@example.com`;
+        const uniqueEmail = `test-${Math.random()}@example.com`
         const password = "someUniquePassword";
 
         await request(app.server)
