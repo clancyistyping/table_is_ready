@@ -1,4 +1,5 @@
-import { describe, it, beforeAll, afterAll, expect } from "vitest";
+import 'dotenv/config';
+import { describe, it, beforeAll, afterAll, expect, beforeEach } from "vitest";
 import { login } from "../src/services/auth.services.js"
 import { prisma } from "../src/lib/prisma.js";
 import { AppError } from "../src/utils/AppError.js"
@@ -14,20 +15,22 @@ let uniqueEmail: string;
 describe("login service", () => {
     beforeAll(async () => {
         // load .env for vitest
-        import('dotenv/config');
 
         app = await buildServer();
         await app.ready();
 
         // db clean reset
         await prisma.user.deleteMany();
+    });
 
-        // create user
+    beforeEach(async () => {
+        await prisma.user.deleteMany();
+
         uniqueEmail = `login-test-${Date.now()}@example.com`;
         await request(app.server)
             .post("/auth/register")
-            .send({ email: uniqueEmail, password: "password" });
-    });
+            .send({ email: uniqueEmail, password: "password" });;
+    })
 
     afterAll(async () => {
         await app.close();
@@ -39,7 +42,7 @@ describe("login service", () => {
     })
 
     it("wrong password: throws AppError", async () => {
-        await expect(login("test1@example.com", "incorrectPW")).rejects.toBeInstanceOf(AppError);
+        await expect(login(uniqueEmail, "incorrectPW")).rejects.toBeInstanceOf(AppError);
     })
 
     it("Returns user for correct cred", async () => {

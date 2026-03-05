@@ -28,7 +28,7 @@ export const buildServer = async () => {
     });
 
     // Global error handler
-    app.setErrorHandler((error, _request, reply) => {      
+    app.setErrorHandler((error, _request, reply) => {
         // If it's our custom error, use its status code
         if (error instanceof AppError) {
             return reply.code(error.statusCode).send({
@@ -47,7 +47,7 @@ export const buildServer = async () => {
 
     // Register routes
     await app.register(healthRoutes);
-    await app.register(authRoutes, { prefix: "/auth" })
+    await app.register(authRoutes, { prefix: "/auth" });
     await app.register(usersRoutes, { prefix: "/users" })
 
     await app.ready();

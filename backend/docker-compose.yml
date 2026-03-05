@@ -30,7 +30,7 @@ services:
     volumes:
       - .:/app # Sync local to the container when files are saved
       - /app/node_modules # Protects container's node_modules from being overwritten
-    command: npx tsx watch src/server.ts # waching file changes
+    command: npx tsx watch src/app.ts # waching file changes
 
 volumes:
   postgres_data:

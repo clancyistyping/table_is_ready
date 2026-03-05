@@ -47,9 +47,14 @@ const authRoutes: FastifyPluginAsync = async (app) => {
 
             const user = await login(email, password)
 
-            const token = app.jwt.sign({ userId: user.id,
+            if (!user) {
+                return reply.status(401).send({ error: "Invalid credentials" });
+            }
+
+            const token = await reply.jwtSign({
+                userId: user.id,
                 role: user.role
-             })
+            })
 
             return reply.code(200).send({ token });
         })
