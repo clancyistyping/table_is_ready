@@ -7,8 +7,7 @@ export default defineConfig({
       './test/setup/setup.ts',    // Now runs in parallel per worker
       './test/setup/clear-db.ts'  // Cleans tables after schema is ready
     ],
-    pool: 'threads',
+    fileParallelism: false,
     // Ensure files are not ran sequentially
-    fileParallelism: true,
   },
 });
