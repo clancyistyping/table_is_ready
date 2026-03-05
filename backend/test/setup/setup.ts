@@ -1,34 +1,26 @@
 import { execSync } from 'child_process';
-import { prisma } from '../../src/lib/prisma';
+import { prisma } from '../../src/lib/prisma.js';
 
 export default async function () {
   const workerId = process.env.VITEST_POOL_ID || '0';
   const schemaName = `test_schema_${workerId}`;
   
-  // 1. Force the env var update BEFORE anything else
+  // 1. Update the process env IMMEDIATELY
   const baseUrl = process.env.DATABASE_URL?.split('?')[0];
-  process.env.DATABASE_URL = `${baseUrl}?schema=${schemaName}`;
+  const urlWithSchema = `${baseUrl}?schema=${schemaName}`;
+  process.env.DATABASE_URL = urlWithSchema;
 
-  console.log(`\n🏗️  [Worker ${workerId}] Setting up ${schemaName}...`);
+  console.log(`\n [Worker ${workerId}] Syncing: ${schemaName}`);
 
-  try {
-    // 2. Sync the schema
-    execSync(`npx prisma db push --accept-data-loss`, {
-      stdio: 'inherit',
-      env: { ...process.env }
-    });
+  // 2. Run push AND generate in the same shell to ensure sync
+  // Standard 'npx prisma generate' is required because of your custom 'output' path
+  execSync(`npx prisma db push --accept-data-loss && npx prisma generate`, {
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: urlWithSchema }
+  });
 
-    // 3. IMPORTANT: Re-generate the client in CI
-    execSync(`npx prisma generate`, {
-      stdio: 'inherit',
-      env: { ...process.env }
-    });
-
-    // 4. Force a connection check
-    await prisma.$connect();
-    console.log(`✅ [Worker ${workerId}] Database ready.`);
-  } catch (e) {
-    console.error(`❌ [Worker ${workerId}] Setup failed!`, e);
-    throw e;
-  }
+  // 3. IMPORTANT: Tell the prisma instance to re-read the URL
+  // This prevents the "ColumnNotFound" error by ensuring the client
+  // knows exactly which schema it is talking to.
+  await prisma.$connect();
 }
