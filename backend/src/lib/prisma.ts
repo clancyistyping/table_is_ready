@@ -1,5 +1,4 @@
 import "dotenv/config";
-import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from "../generated/prisma/client.js";
 
@@ -15,7 +14,8 @@ const getConnectionString = () => {
   return url;
 };
 
-const pool = new pg.Pool({ connectionString: getConnectionString() });
-const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg({
+  connectionString: getConnectionString(),
+});
 
 export const prisma = new PrismaClient({ adapter });
