@@ -5,6 +5,9 @@ import { config } from "./config/index.js";
 import Fastify, { FastifyError } from "fastify";
 import jwt from "@fastify/jwt";
 import sensible from "@fastify/sensible";
+import rateLimit from "@fastify/rate-limit";
+
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 // Routes
 import authRoutes from "./routes/auth.routes.js";
@@ -19,7 +22,14 @@ import { request } from "node:http";
 
 export const buildServer = async () => {
     const app = Fastify({
-        logger: true,
+        logger: config.nodeEnv === "development"
+            ? { transport: { target: "pino-pretty" } } // prettier log
+            : true
+    });
+
+    await app.register(rateLimit, {
+        max: 100, // max req
+        timeWindow: "1 minute", // per minute
     });
 
     // Checking JWT
@@ -35,6 +45,13 @@ export const buildServer = async () => {
                 error: error.message,
                 code: error.code // e.g., "AUTH_EMAIL_EXISTS"
             });
+        }
+
+        // Prisma Error
+        if (error instanceof PrismaClientKnownRequestError) {
+            if (error.code === "P2002") { // Unique constraint
+                return reply.code(409).send({ error: "Duplicate value" });
+            }
         }
 
         // Otherwise, send a generic 500
