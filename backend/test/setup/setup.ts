@@ -1,34 +1,21 @@
 import { execSync } from 'child_process';
-import { prisma } from '../../src/lib/prisma.js';
 
 export default async function () {
-  // POOL_ID is the "Thread ID" (0, 1, 2, 3...)
-  const threadId = process.env.VITEST_POOL_ID || '0';
-  const schemaName = `test_schema_${threadId}`;
+  const workerId = process.env.VITEST_POOL_ID || '0';
+  const schemaName = `test_schema_${workerId}`;
+  const url = `${process.env.DATABASE_URL?.split('?')[0]}?schema=${schemaName}`;
+  
+  process.env.DATABASE_URL = url;
 
-  // Update the URL for this specific worker
-  const baseUrl = process.env.DATABASE_URL?.split('?')[0];
-  const urlWithSchema = `${baseUrl}?schema=${schemaName}`;
+  console.log(`[Worker ${workerId}] 🏗️  Syncing database...`);
 
-  // Inject this into the environment so the Prisma Client picks it up
-  process.env.DATABASE_URL = urlWithSchema;
+  // 1. Push the schema
+  execSync(`npx prisma db push --accept-data-loss`, {
+    env: { ...process.env, DATABASE_URL: url }
+  });
 
-  console.log(`[Thread ${threadId}] 🏗️  Building schema: ${schemaName}`);
-
-  // Push the schema
-  try {
-    // We use --accept-data-loss for CI to ensure the push never hangs
-    execSync(`npx prisma db push --accept-data-loss`, {
-      env: { ...process.env, DATABASE_URL: urlWithSchema },
-      stdio: 'inherit' // This allows you to see Prisma errors in your CI logs!
-    });
-
-    // Optional: Warm up the connection
-    await prisma.$connect();
-  } catch (err) {
-    console.error(`[Worker ${threadId}] ❌ Schema sync failed:`, err);
-    throw err;
-  }
-
-  console.log(`[Thread ${threadId}] ✅ Ready.`);
+  // 2. IMPORTANT: Regenerate the client to match the schema in the custom output folder
+  execSync(`npx prisma generate`, {
+    env: { ...process.env, DATABASE_URL: url }
+  });
 }
